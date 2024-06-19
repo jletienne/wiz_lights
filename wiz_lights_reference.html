@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WiZ UDP Code Generator</title>
+  <!-- <meta name="viewport" content="initial-scale=1.0,width=device-width" /> -->
+	<style>
+	  /* Style the radio buttons and labels to make them appear on the left */
+  	body {
+  font-family: Arial, sans-serif;
+} 
+		input[type="radio"] {
+	float: left;
+	margin-right: 10px;
+  	}
+  	label {
+	display: inline-block;
+  }
+	  .indented1 {
+	margin-left:20px; /*20px of indentation */
+	margin-top:10px;
+}
+	  .indented2 {
+	margin-left:40px;
+	margin-top:10px;
+}
+	  label {
+    margin-bottom: 7px;
+	font-size: 16px;
+}
+	  p {
+		  font-size: 16px;
+	  }
+	  code {
+  background-color: #eee;
+  border: 1px solid #999;
+  display: inline-block;
+  padding: 10px;
+}
+.accordion {
+  background-color:white;
+  cursor: pointer;
+  color: #232323;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 14px;
+}
+		
+.accordion2 {
+  background-color:white;
+  cursor: pointer;
+  border: none;
+  color: #232323;
+  text-align: left;
+  outline: none;
+  font-size: 14px;
+}
+
+.panel {
+  padding: 0 12px;
+  display: none;
+  overflow: hidden;
+		}
+.panel2 {
+  display: none;
+  overflow: hidden;
+}
+		.image_small {
+			height: 21px; 
+		}
+		.image_bigger {
+			height: 80px; 
+		}
+  </style>
+</head>
+<body>
+  <h1>WiZ UDP Code Generator</h1>
+	<h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I want to...</h3>
+<div id="main_settings" class = "padded">
+  <label for="change_settings">Change a light's settings</label>
+<input type="radio" name="light_action" id="change_settings" value="change_settings" onchange="displayJSON(this.value)">
+	<div id="settings_options" class="indented1" style="display: none;">
+	<label for="custom_rgb">Set my light to a custom RGB color</label>
+	<input type="radio" name="settings_options" id="custom_rgb" value="custom_rgb" onchange="displaySettingsOptions(this.value)">
+	<div id="rgb_picker" class="indented2" style="display:none;">
+		<label for="color">Color</label>
+	  <input type="color" id="color" value="#ff0000" oninput="updateColor(this.value)">
+		<br><br>
+	  <label for="brightness">Brightness&nbsp;</label>
+	  <input type="number" id="rgb_brightness" min="10" max="100" value="75" oninput="updateBrightness(this.value)"/>
+	  <input type="range" min="10" max="100" value="75" id="rgb_brightness_slider" oninput="updateBrightness(this.value)">
+		<br><br>
+		<label>Note: For <b>Brightness,</b> choose a value between 10-100.<br>10 represents the lowest possible brightness.</label>
+	  </div>
+	<br>
+	<label for="default_scene">Set my light to a scene from the default WiZ app</label>&nbsp;
+		<input type="radio" name="settings_options" id="default_scene" value="default_scene" onchange="displaySettingsOptions(this.value)">
+
+	<div id="scene_picker" class="indented2" style="display:none;">
+	  <label for="scenes">Select a scene:</label>
+	  <select id="scenes" onchange="updateScene(this.value)">
+		<option class="red" value="0" selected disabled>Select an option</option>
+		<option value="0" disabled>---Static Scenes---</option>  
+		<option value="6">Cozy</option>
+		<option value="11">Warm White</option>
+		<option value="12">Daylight</option>
+		<option value="13">Cool white</option>
+		<option value="14">Night light</option>
+		<option value="15">Focus</option>
+		<option value="16">Relax</option>
+		<option value="17">True colors</option>
+		<option value="18">TV time</option>
+		<option value="19">Plantgrowth</option>
+		<option value="0" disabled>---Dynamic Scenes---</option>
+		<option value="1">Ocean</option>
+		<option value="2">Romance</option>
+		<option value="3">Sunset</option>
+		<option value="4">Party</option>
+		<option value="5">Fireplace</option>
+		<option value="7">Forest</option>
+		<option value="8">Pastel Colors</option>
+		<option value="20">Spring</option>
+		<option value="21">Summer</option>
+		<option value="22">Fall</option>
+		<option value="23">Deepdive</option>
+		<option value="24">Jungle</option>
+		<option value="25">Mojito</option>
+		<option value="26">Club</option>
+		<option value="27">Christmas</option>
+		<option value="28">Halloween</option>
+		<option value="29">Candlelight</option>
+		<option value="30">Golden white</option>
+		<option value="31">Pulse</option>
+		<option value="32">Steampunk</option>
+		<option value="0" disabled>---Miscellaneous---</option>
+		<option value="9">Wake up</option>
+		<option value="10">Bedtime</option>
+		<option value="1000">Rhythm</option>
+	  </select>
+		<br><br>
+		<label for="brightness">Brightness:</label>
+	  <input type="number" id="scene_brightness" min="10" max="100" value="75" oninput="updateBrightness(this.value)"/>
+	  <input type="range" min="10" max="100" value="75" id="scene_brightness_slider" oninput="updateBrightness(this.value)">
+		<br>
+		<div id="scene_speed_ui" style="display:none;">
+		<label for="speed">Speed:</label>
+		<input type="number" id="scene_speed" min="10" max="200" value="125" oninput="updateSpeed(this.value)"/>
+		<input type="range" min="10" max="200" value="125" id="scene_speed_slider" oninput="updateSpeed(this.value)">
+		</div>
+		<br><br>
+		<label>Note: For <b>Brightness,</b> choose a value between 10-100.</label>
+		<br>
+		<div id="speed_tip" style="display:none;">
+		<label>For <b>Speed</b>, choose a value between 10-200.</label>
+			</div>
+			
+	</div>
+	<br>
+	<label for="custom_temp">Set my light to a custom warm/cool white</label>
+	<input type="radio" name="settings_options" id="custom_temp" value="custom_temp" onchange="displaySettingsOptions(this.value)">
+		<div id="temp_picker" class="indented2" style="display:none;">
+			<label for="temp_k">Temp in Kelvin:</label>
+	  		<input type="number" id="temp_k" min="2200" max="6200" value="3000" oninput="updateTemperature(this.value)"/>&nbsp;&nbsp;<canvas id="colorPreview" width="20" height="20"></canvas>&nbsp;&nbsp;
+  		  <input type="range" min="2200" max="6200" value="3000" id="temp_k_slider" oninput="updateTemperature(this.value)">
+			<br><br>
+			<label for="temp_brightness">Brightness:</label>
+	  		<input type="number" id="temp_brightness" min="10" max="100" value="75" oninput="updateBrightness(this.value)"/>
+	  		<input type="range" min="10" max="100" value="75" id="temp_brightness_slider" oninput="updateBrightness(this.value)">
+			<br><br>
+			<label>Note: For presets like<b> Warm White,</b> choose "Set my light to a scene"<br>instead of this option.</label>
+			<br>
+			<label>Note: For <b>Brightness,</b> choose a value between 10-100.</label>
+			</div>
+  </div>
+<br>
+<label for="turn_on">Turn a Light or Plug ON</label>
+  <input type="radio" name="light_action" id="turn_on" value="turn_on" onchange="displayJSON(this.value)">
+  <br>
+  <label for="turn_off">Turn a Light or Plug OFF</label>
+<input type="radio" name="light_action" id="turn_off" value="turn_off" onchange="displayJSON(this.value)">
+  <br>
+	<label for="get_info">Get the status of a light or plug</label>
+<input type="radio" name="light_action" id="get_info" value="get_info" onchange="displayJSON(this.value)">
+	</div>
+  <br>
+<div id="code_result" style="display: none;">
+<h2>Your Code is:</h2>
+		<code>
+		<div id="json_result"></div>
+		</code>
+<br><br>
+<input type="reset" value="Reset" onclick="resetRadio()">
+<br><br>
+<button class="accordion" id="how_to_toggle"><u>How To Use This Code (click to expand!)</u>:</button>
+<div id="how_to" class="panel" style="display:none;">
+	<p>These examples use the <b>actual code</b> you just generated, so you can copy and paste them directly! </p>
+	<h3><img src="logo-BF.png" class="image_small">&nbsp;&nbsp;In Bitfocus Companion:</h3>
+	<p>Bitfocus Companion lets you use an Elgato Streamdeck to control your lights.  Under devices, search for "Generic TCP and UDP Requests", and click add.  Ignore the warning, I've already made a feature request myself.&nbsp;</p>
+  <p>Here's how to find your bulb's IP address: in the Wiz app on your iOS or Android device, go to Settings &gt; Lights &gt; tap the <b>i</b> icon on the right hand side near the top, and note the IP address.&nbsp;</p>
+	<p>Enter this IP address into the Target IP field (should look like 192.168.1.XX) and set the port as <b>38899</b>.  Then choose <b>UDP</b> in the dropdown instead of TCP, and click save. Now, inside any button find your light's "Send Command" action, and enter the command above exactly as-is.</p>
+<h3><img src="logo-win.png" class="image_small">&nbsp;&nbsp;On Windows:</h3>
+	<p>If you have <a href="https://nmap.org/">Nmap</a> installed, you can change your lights by using the "Command" and "Target" fields, see Bitfocus guide above for how to find your light's IP address. After the IP, put :38899. You can also send commands from a .bat file or Command Prompt.  However, in order for this to work, you'll need to add ncat to your system path.
+<button class="accordion2" id="nmap_guide_toggle"><u>Click here for a simple guide (click to expand!)</u>:</button></p>
+	<div id="nmap_guide" class="panel" style="display:none;">
+<p>1) Install Nmap <a href="https://nmap.org/dist/nmap-7.93-setup.exe">at this link</a>.<br>
+		2) Find where your Nmap installation is.  It's usually C:\Program Files (x86)\Nmap.  Write down where yours is. <br>
+	  3) Type Win+R <br>
+	  4) Enter SystemPropertiesAdvanced, and press enter <br>
+	  5) Near the bottom right, click Environment Variables. <br>
+	  6) This window will be split in two sections, check the top section for something called Path. Click it, and click edit (the edit button on the top section, not the bottom one).<br>
+	  7) Click new, and type in the path to your Nmap installation without quotes, then press enter.<br>
+  8) You can now type ncat in a command prompt window to see if this process worked.  If you get "'ncat' is not recognized as an internal or external command", you've done something wrong.  If it asks you about a host then quits, you've done it correctly. </p>
+		</div>
+	<p>Use the command below, which is properly formatted for command prompt on Windows using ncat:&nbsp;&nbsp;</p>
+<code>
+	  echo <span id="codecopy1"></span> | ncat -u -w 1 192.168.1.<span style="color: #ff0000"><b>XX</b></span> 38899
+	</code>
+	<br><br>
+	<h3><img src="logo-mac.png" class="image_small">&nbsp;&nbsp;On macOS or <img src="logo-linux.png" class="image_small">&nbsp;Linux:</h3>
+    <p>macOS and Linux come with netcat installed, referred to by nc.  We can use that to send our command to our light.  The command here is slightly modified with escape characters so Terminal can properly recognize it.  All you need to do is run this command, replacing the IP address with the one of the light you want to modify (port 38899 is always the same).<br>
+    </p>
+    <p>Use the command below, which is properly formatted for macOS and Linux terminals:&nbsp;</p>
+<code>
+  echo -n "<span id="codecopy2"></span>" | nc -u -w 1 192.168.1.<span style="color: #ff0000"><b>XX</b></span> 38899
+		</code>
+	<br>
+<p>Alternatively, you can also install <a href="https://nmap.org/">Nmap</a> for a GUI experience on macOS/Linux.  Same instructions as Windows.</p>
+</div>
+<br><br>
+<script>
+	final_code = "This is an error lol";
+	function showResult() {
+		code_result.style.display = "block";
+	}
+	function hideResult() {
+		code_result.style.display = "none";
+		how_to.style.display = "none";
+		nmap_guide.style.display = "none"
+	}
+	function showSettingsSubmenu() {
+		settings_options.style.display = "block";
+	}
+	function hideSettingsSubmenu() {
+		settings_options.style.display = "none";
+	}
+	function showScenesSubmenu() {
+		scene_picker.style.display = "block";
+	}
+	function hideScenesSubmenu() {
+		scene_picker.style.display = "none";
+	}
+	function showRGBSubmenu() {
+		rgb_picker.style.display = "block";
+	}
+	function hideRGBSubmenu() {
+		rgb_picker.style.display = "none";
+	}
+	function showTempSubmenu() {
+		temp_picker.style.display = "block";
+	}
+	function hideTempSubmenu() {
+		temp_picker.style.display = "none";
+	}
+	function hidehowto() {
+		panel.style.display = "none"
+	}
+	function render_final_code() {
+		if (settings.type === "rgb") {
+			const color = settings.color;
+			const colorComponents = color.substring(1).split('');
+			const r = parseInt(colorComponents[0] + colorComponents[1], 16);
+			const g = parseInt(colorComponents[2] + colorComponents[3], 16);
+			const b = parseInt(colorComponents[4] + colorComponents[5], 16);
+			final_code = final_code = `{"id":1,"method":"setPilot","params":{"r":${r},"g":${g},"b":${b},"dimming": ${settings.brightness}}}`;
+		} else if (settings.type === "static_scene") {
+			final_code = `{"id":1,"method":"setPilot","params":{"sceneId":${settings.scene},"dimming":${settings.brightness}}}`;
+		} else if (settings.type === "dynamic_scene") {
+			final_code = `{"id":1,"method":"setPilot","params":{"sceneId":${settings.scene},"speed":${settings.speed},"dimming":${settings.brightness}}}`;
+		} else if (settings.type === "temp") {
+			final_code = `{"id":1,"method":"setPilot","params":{"temp":${settings.temperature},"dimming":${settings.brightness}}}`;
+		}
+		json_result.innerHTML = final_code;
+		document.getElementById("codecopy1").innerHTML = final_code;
+		final_code_mac = final_code.replace(/"/g, '\\"');
+		document.getElementById("codecopy2").innerHTML = final_code_mac;
+		showResult()
+		}
+	var settings = {speed: 125, brightness: 75, temperature: "warm", color: "#ff0000", scene: 0, type: "none"};
+  	function updateSpeed(newSpeed) {
+    	settings.speed = newSpeed;
+		document.getElementById("scene_speed").value = newSpeed;
+		document.getElementById("scene_speed_slider").value = newSpeed;
+		render_final_code()
+	}
+  	function updateBrightness(newBrightness) {
+    	settings.brightness = newBrightness;
+		document.getElementById("rgb_brightness").value = newBrightness;
+		document.getElementById("rgb_brightness_slider").value = newBrightness;
+		document.getElementById("scene_brightness").value = newBrightness;
+		document.getElementById("scene_brightness_slider").value = newBrightness;
+		document.getElementById("temp_brightness").value = newBrightness;
+		document.getElementById("temp_brightness_slider").value = newBrightness;
+		render_final_code()
+  	}
+	  function updateColor(newColor) {
+    	settings.color = newColor;
+		render_final_code();
+  	}
+	function updateTemperature(newTemperature) {
+		const canvas = document.getElementById("colorPreview");
+		const ctx = canvas.getContext("2d");
+		settings.temperature = newTemperature;
+		document.getElementById("temp_k").value = newTemperature;
+		document.getElementById("temp_k_slider").value = newTemperature;
+
+		let color;
+		if (newTemperature <= 4000) {
+			let l = (newTemperature - 2200) / (4000 - 2200) * 50 + 50;
+			color = `hsl(50, 100%, ${l}%)`;
+		} else {
+			let l = (6200 - newTemperature) / (6200 - 4000) * 50 + 50;
+			color = `hsl(200, 100%, ${l}%)`;
+		}
+		ctx.fillStyle = color;
+		ctx.fillRect(0, 0, colorPreview.width, colorPreview.height);
+		render_final_code()
+	}
+
+  	function updateScene(newScene) {
+    	settings.scene = newScene;
+		if ([6,9,10,11,12,13,14,15,16,17,18,19,1000].includes(+newScene)) {
+			settings.type = "static_scene";
+			scene_speed_ui.style.display = "none";
+			speed_tip.style.display = "none";
+		}	else {
+			settings.type = "dynamic_scene";
+			scene_speed_ui.style.display = "block";
+			speed_tip.style.display = "block";
+		}
+		render_final_code()
+  	}
+	function resetSettingsSubmenu() {
+		document.getElementById("custom_rgb").checked = false;
+		document.getElementById("default_scene").checked = false;
+		document.getElementById("custom_temp").checked = false;
+		document.getElementById("rgb_picker").style.display = "none";
+		document.getElementById("scene_picker").style.display = "none";
+		document.getElementById("temp_picker").style.display = "none";
+		how_to.style.display = "none";
+		nmap_guide.style.display = "none";
+		settings.type = "none"
+	}
+	function displaySettingsOptions(value) {
+	  if (value === "default_scene") {
+		showScenesSubmenu();
+		if (settings.scene > 0) {
+			showResult();
+			} else {
+				hideResult();
+			}
+		///Check to see if we already have something selected in the scene selector
+		if ([6,9,10,11,12,13,14,15,16,17,18,19,1000].includes(document.getElementById("scenes").value)) {
+			settings.type = "static_scene";
+			render_final_code()
+		}	else {
+			settings.type = "dynamic_scene";
+			if (settings.scene > 0) {
+				render_final_code()
+				}
+			
+		}
+	  } else {
+		hideScenesSubmenu();
+	  }
+	  if (value === "custom_rgb") {
+		settings.type = "rgb";
+		showRGBSubmenu();
+		render_final_code();
+		showResult();
+	  } else {
+		hideRGBSubmenu();
+	  }
+	  if (value === "custom_temp") {
+		settings.type = "temp";
+		showTempSubmenu()
+		updateTemperature(document.getElementById("temp_k").value)
+		render_final_code()
+	  } else {
+		hideTempSubmenu()
+	  }
+  	}
+	function displayJSON(value) {
+	  var json_result = document.getElementById("json_result");
+	  if (value === "change_settings") {
+		showSettingsSubmenu()
+		hideResult()
+	  } else if (value === "turn_on") {
+		final_code = '{"id":1,"method":"setState","params":{"state":true}}';
+		resetSettingsSubmenu()
+		render_final_code()
+		showResult()
+		hideSettingsSubmenu()
+	  } else if (value === "turn_off") {
+		final_code = '{"id":1,"method":"setState","params":{"state":false}}';
+		resetSettingsSubmenu()
+		render_final_code()
+		showResult()
+		hideSettingsSubmenu()
+		var settings_options = document.getElementById("settings_options");
+		settings_options.style.display = "none";
+	  } else if (value === "get_info") {
+		final_code = '{"method":"getPilot","params":{}}';
+		resetSettingsSubmenu()
+		render_final_code()
+		showResult()
+		hideSettingsSubmenu()
+	  } else {
+		json_result.innerHTML = final_code;
+		render_final_code()
+		hideResult()
+		hideSettingsSubmenu()
+	  }
+	}
+  </script>
+<script>
+	function resetRadio(){
+	var allRadios = document.getElementsByName("light_action");
+	var allSettingsRadios = document.getElementsByName("settings_options");
+	var json_result = document.getElementById("json_result");
+	var settings_options = document.getElementById("settings_options");
+		for(let i = 0; i < allRadios.length; i++){
+			allRadios[i].checked = false;
+		}
+		for(let i = 0; i < allSettingsRadios.length; i++){
+			allSettingsRadios[i].checked = false;
+		}
+	json_result.innerHTML = "";
+	settings_options.style.display = "none";
+	hideResult()
+	resetSettingsSubmenu()
+  }
+  </script>
+<script>
+  var accordion = document.getElementById("how_to_toggle");
+  accordion.addEventListener("click", function() {
+    this.classList.toggle("active");
+    var panel = this.nextElementSibling;
+    if (panel.style.display === "block") {
+      panel.style.display = "none";
+    } else {
+      panel.style.display = "block";
+    }
+  });
+</script>
+<script>
+  var accordion2 = document.getElementById("nmap_guide_toggle");
+  accordion2.addEventListener("click", function() {
+    this.classList.toggle("active");
+    if (nmap_guide.style.display === "block") {
+      nmap_guide.style.display = "none";
+    } else {
+      nmap_guide.style.display = "block";
+    }
+  });
+</script>
+</body>
+</html>
